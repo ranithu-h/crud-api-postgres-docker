@@ -1,0 +1,30 @@
+{
+  "dependencies": {
+    "better-sqlite3": "^13.0.3",
+    "express": "^5.2.1",
+    "swagger-ui-express": "^5.0.1"
+  },
+  "name": "project-01-build-crud-api",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ranithu-h/project-01-BUILD-CRUD-API.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "bugs": {
+    "url": "https://github.com/ranithu-h/project-01-BUILD-CRUD-API/issues"
+  },
+  "homepage": "https://github.com/ranithu-h/project-01-BUILD-CRUD-API#readme"
+}
