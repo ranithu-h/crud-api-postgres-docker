@@ -2,3 +2,4 @@ node_modules/
 tasks.db
 docs/
 .DS_Store
+.env
