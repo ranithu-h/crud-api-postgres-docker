@@ -1,4 +1,5 @@
 import express from 'express';
+import 'dotenv/config';
 import pg from 'pg';
 
 const {Pool} = pg;
@@ -30,6 +31,7 @@ setupDatabase();
 
 import swaggerUi from 'swagger-ui-express';
 import { readFileSync } from 'fs';
+import { log } from 'console';
 
 const openapiDocument = JSON.parse(readFileSync('./docs/openapi.json', 'utf-8'));
 
@@ -46,41 +48,47 @@ app.get('/health', (req, res) => {
   res.json({ "status": "OK" });
 });
 
-app.get('/tasks', (req, res) => {
+app.get('/tasks', async (req, res) => {
   const search = req.query.search;
+  const done = req.query.done;
 
   if (search !== undefined) {
-    const results = db.prepare('SELECT * FROM tasks WHERE title LIKE ?').all(`%${search}%`);
-    return res.json(results);
+    const results = await pool.query('SELECT * FROM tasks WHERE title LIKE $1', [`%${search}%`]);
+    return res.json(results.rows);
   }
 
-  if (req.query.done === "false"){
-    let not_dont_tasks = db.prepare('SELECT * FROM tasks WHERE done = 0').all()
-    return res.json(not_dont_tasks)
+  if (done === "false"){
+    let not_dont_tasks = await pool.query('SELECT * FROM tasks WHERE done = false')
+    return res.json(not_dont_tasks.rows)
   }
-  const query = db.prepare('SELECT * FROM tasks').all();
-  res.json(query);
+  const query = await pool.query('SELECT * FROM tasks');
+  res.json(query.rows);
 });
 
-app.get('/tasks/:id', (req, res) =>{
+app.get('/tasks/:id', async (req, res) =>{
   const id = Number(req.params.id);
-  const task = db.prepare('SELECT * FROM tasks WHERE id = ?').get(id);
+  const result = await pool.query('SELECT * FROM tasks WHERE id = $1', [id]);
+  const task = result.rows[0];
+
+  console.log(result)
 
   if (!task){
     return res.status(404).json({ error: `Task ${id} not found` });
   }
 
-  res.json(task);
+  res.json(task.rows);
 });
 
-app.post('/tasks', (req, res) => {
+app.post('/tasks', async (req, res) => {
   const title = req.body.title
 
   if (!title){
     return res.status(400).json({error: "Missing Title"});
   }
 
-  const query = db.prepare("INSERT INTO tasks (title, done) VALUES (?,?)").run(title, 0)
+  const query = await pool.query("INSERT INTO tasks (title, done) VALUES ($1, $2)", `[${title}, 0]`)
+
+    //////////////  START FROM HERE  //////////////
 
   res.status(201).json(db.prepare("SELECT * FROM tasks WHERE id = ?").get(query.lastInsertRowid));
 });

@@ -1,6 +1,7 @@
 {
   "dependencies": {
     "better-sqlite3": "^13.0.3",
+    "dotenv": "^17.4.2",
     "express": "^5.2.1",
     "pg": "^8.23.0",
     "swagger-ui-express": "^5.0.1"
@@ -13,6 +14,7 @@
     "doc": "docs"
   },
   "scripts": {
+    "dev": "node --watch server.js",
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node server.js"
   },
