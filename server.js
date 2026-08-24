@@ -1,30 +1,35 @@
 import express from 'express';
+import pg from 'pg';
+
+const {Pool} = pg;
 const app = express();
 app.use(express.json());
 
-import Database from 'better-sqlite3';
-const db = new Database('tasks.db');
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL
+});
 
-db.exec("CREATE TABLE IF NOT EXISTS tasks (id INTEGER PRIMARY KEY, title TEXT, done INTEGER);");
-const countRow = db.prepare('SELECT COUNT(*) AS numrow FROM tasks').get()
+async function setupDatabase(){
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS tasks (
+    id SERIAL PRIMARY KEY,
+    title TEXT,
+    done BOOLEAN)
+  `);
 
-if (countRow.numrow === 0){
-  const data = [
-    {title: "Task 4", done: 0},
-    {title: "Task 5", done: 1},
-    {title: "Task 6", done: 0}
-  ]
-
-  const insert = db.prepare("INSERT INTO tasks (title, done) VALUES (?,?)");
-  data.forEach((task)=>{
-    insert.run(task.title, task.done);
-  });
+  const countRow = await pool.query(`SELECT COUNT(*) FROM tasks`);
+  if (Number(countRow.rows[0].count) === 0){
+    await pool.query('INSERT INTO tasks (title, done) VALUES ($1, $2)', ['Buy milk', false]);
+    await pool.query('INSERT INTO tasks (title, done) VALUES ($1, $2)', ['Walk the dog', true]);
+    await pool.query('INSERT INTO tasks (title, done) VALUES ($1, $2)', ['Finish assignment', false]);
+  }
 }
+
+setupDatabase();
 
 
 import swaggerUi from 'swagger-ui-express';
 import { readFileSync } from 'fs';
-import { title } from 'process';
 
 const openapiDocument = JSON.parse(readFileSync('./docs/openapi.json', 'utf-8'));
 
