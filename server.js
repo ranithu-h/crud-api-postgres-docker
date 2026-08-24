@@ -86,18 +86,17 @@ app.post('/tasks', async (req, res) => {
     return res.status(400).json({error: "Missing Title"});
   }
 
-  const query = await pool.query("INSERT INTO tasks (title, done) VALUES ($1, $2)", `[${title}, 0]`)
+  const query = await pool.query("INSERT INTO tasks (title, done) VALUES ($1, $2) RETURNING *", [title, false])
 
-    //////////////  START FROM HERE  //////////////
-
-  res.status(201).json(db.prepare("SELECT * FROM tasks WHERE id = ?").get(query.lastInsertRowid));
+  res.status(201).json(query.rows[0]);
 });
 
-app.put('/tasks/:id', (req, res) => {
+app.put('/tasks/:id', async (req, res) => {
   const id = Number(req.params.id);
   let title = req.body.title;
   let done = req.body.done;
-  const task = db.prepare('SELECT * FROM tasks WHERE id = ?').get(id)
+  const query = await pool.query('SELECT * FROM tasks WHERE id = $1', [id])
+  const task = query.rows[0]
 
   if (!task){
     return res.status(404).json({error: "Unknown id"});
@@ -113,9 +112,9 @@ app.put('/tasks/:id', (req, res) => {
   if (done === undefined){
     done = task.done
   }
-  db.prepare("UPDATE tasks SET title = ?, done = ? WHERE id = ?").run(title, done, id)
+  const results = await pool.query("UPDATE tasks SET title = $1, done = $2 WHERE id = $3 RETURNING *", [title, done, id])
 
-  res.json(db.prepare("SELECT * FROM tasks WHERE id = ?").get(id))
+  res.json(results.rows[0]);
 });
 
 app.delete('/tasks/:id', (req, res) => {
