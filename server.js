@@ -117,16 +117,17 @@ app.put('/tasks/:id', async (req, res) => {
   res.json(results.rows[0]);
 });
 
-app.delete('/tasks/:id', (req, res) => {
+app.delete('/tasks/:id', async (req, res) => {
   const id = Number(req.params.id);
-  const task = db.prepare('SELECT * FROM tasks WHERE id = ?').get(id)
+  const query = await pool.query('SELECT * FROM tasks WHERE id = $1', [id])
+  const task = query.rows[0]
   if (!task) {
     return res.status(404).json({ error: `Task ${id} not found` })
   }
 
-  db.prepare('DELETE FROM tasks WHERE id = ?').run(id)
+  await pool.query('DELETE FROM tasks WHERE id = $1', [id])
 
-  res.status(204).send();
+  res.sendStatus(204);
 });
 
 app.listen(port, () => {
