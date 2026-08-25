@@ -31,7 +31,6 @@ setupDatabase();
 
 import swaggerUi from 'swagger-ui-express';
 import { readFileSync } from 'fs';
-import { log } from 'console';
 
 const openapiDocument = JSON.parse(readFileSync('./docs/openapi.json', 'utf-8'));
 
@@ -76,7 +75,7 @@ app.get('/tasks/:id', async (req, res) =>{
     return res.status(404).json({ error: `Task ${id} not found` });
   }
 
-  res.json(task.rows);
+  res.json(task);
 });
 
 app.post('/tasks', async (req, res) => {
