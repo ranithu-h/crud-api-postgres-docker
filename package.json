@@ -3,6 +3,7 @@
     "better-sqlite3": "^13.0.3",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
+    "openai": "^7.10.0",
     "pg": "^8.23.0",
     "swagger-ui-express": "^5.0.1"
   },
